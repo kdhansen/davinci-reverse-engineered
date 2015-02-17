@@ -6,7 +6,7 @@
 
 \documentclass[a4paper, 10 pt, conference]{ieeeconf}      % Use this line for a4 paper
 
-\IEEEoverridecommandlockouts                              % This command is only needed if 
+\IEEEoverridecommandlockouts                              % This command is only needed if
                                                           % you want to use the \thanks command
 
 \overrideIEEEmargins                                      % Needed to meet printer requirements.
@@ -22,6 +22,9 @@
 \usepackage{times} % assumes new font selection scheme installed
 \usepackage{amsmath} % assumes amsmath package installed
 \usepackage{amssymb}  % assumes amsmath package installed
+\usepackage[draft,inline,nomargin]{fixme}
+\usepackage{color}
+\newcommand{\tn}[1]{\textnormal{#1}}
 
 \title{\LARGE \bf
 Da Vinci: Reverse Engineered
@@ -53,7 +56,7 @@ The da Vinci Surgical system from Intuitive Surgical Inc. is a robotic manipulat
 \section{Introduction}
 Laparoscopic surgery is a minimally invasive method of surgery as an alternative to open surgery.
 In laparoscopic surgery, the procedure is performed through small incisions (5--15 mm) with an endoscope and special instruments that allow the surgeon to see and operate inside the patient's body.
-The small incisions allow the instruments to go between the ribs of the patient with out having to sever these, and leads to smaller scaring and faster recovery.
+The small incisions allow the instruments to go between the ribs of the patient with out having to sever these, and leads to smaller scaring and faster recovery. \fxnote{Maybe we should make it clear that this is a very particular example - when doing surgery in e.g. the abdomina you get less scaring, but this has nothing to do with the ribs}
 The instruments may be handheld or actuated by a robotic surgery system.
 
 \subsection{The da Vinci Surgical System}
@@ -64,13 +67,13 @@ This was accomplished by using a parallel linkage system.
 In this way, only few stresses are applied to the incision point leading to faster recovery for the patient.
 See Fig. \ref{fig:remote_center_manipulator}.
 
-Concurrently, during his doctoral studies, Akhil Madhani developed the Black Falcon~\cite{blackFalcon, madhani1997design, madhani1998articulated}, an instrument for robotic laparoscopic surgery, which uses a system of wires and pulleys to actuate the a four degrees of freedom end effector.
+Concurrently, during his doctoral studies, Akhil Madhani developed the Black Falcon~\cite{blackFalcon, madhani1997design, madhani1998articulated}, an instrument for robotic laparoscopic surgery, which uses a system of wires and pulleys to actuate a four degrees of freedom end effector.
 This allows the motors to be located outside the body of the patient, see Figs. \ref{fig:instrument} and \ref{fig:gripper_tip}.
 Combined with the SRI manipulator, this provides a 7-DOF laparoscopic manipulator; very suited for robotic telesurgery.
 
 The focus of Madhani and his supervisor Kenneth J. Salisbury was on providing a haptic interface for the surgeons performing laparoscopic telesurgery.
 Consequently, they developed a telesurgery master console \cite{salisbury2004master}.
-In this console, the surgeon has two 7-DOF joysticks that provides an intuitive interface to the manipulator discussed above.
+In this console, the surgeon has two 7-DOF joysticks that provide an intuitive interface to the manipulator discussed above.
 Along with the joysticks, the console has a 3D vision system and foot pedals for controlling an endoscope, see Fig. \ref{fig:console}
 
 The company Intuitive Surgical Inc. was set up to acquire the patents for all these inventions to produce and sell what would be known as the da Vinci Surgical System.
@@ -118,7 +121,7 @@ The vast future potential in surgical robotics has spawned new robots to emerge.
 \end{figure}
 
 \subsection{Illustration of the surgery}
-
+d
 \subsection{Description of the robot}
 
 \begin{figure}[t]
@@ -136,7 +139,7 @@ The vast future potential in surgical robotics has spawned new robots to emerge.
 \begin{figure}[t]
     \centering
        \includegraphics[width=0.8\linewidth]{graphics/US08834489-20140916-D00004-instrument-cutout}
-    \caption{Drawing of an Endowrist instrument. \label{fig:instrument}}
+    \caption{Drawing of an EndoWrist instrument. \label{fig:instrument}}
 \end{figure}
 
 \begin{figure}[t]
@@ -145,7 +148,58 @@ The vast future potential in surgical robotics has spawned new robots to emerge.
     \caption{Sketch of the tip of the needle-driver instrument. \label{fig:gripper_tip}}
 \end{figure}
 
-\subsection{Description of the system}.
+Type 118746 - http://www.maxonmotor.com/maxon/view/product/motor/dcmotor/re/re25/118746
+\cleardoublepage
+\subsection{Description of the system}
+The AAU surgical robot is at present completely computer controlled; thus, the master console is not used. In stead of the console, a computer system has been build. 
+
+%does not use the master console, however, uses only the patient cart by tapping into the connection to the console.
+%A fair amount of reverse engineering has resulted in a system that is able to measure the state of the manipulator arms and control their servos.
+%For modularity reasons, each arm has a dedicated control system.
+%
+%The systems consist of two embedded computers National Instruments single board RIO controllers, which has the two main tasks:
+%\begin{itemize}
+%\item Getting measurements (positions, velocities, motor currents) from the sensors on the arm and sending them to a client PC, and
+%\item getting control reference signals from the PC to drive the motors that controls the motors.
+%\end{itemize}
+%A diagram of the system is shown in Figure~\ref{fig:hardwareRobot}. Beside these two tasks, the embedded computers enforce security constraints like limiting control values to protect the motors and stopping the motors when the joints reach their limits.
+
+
+
+
+\subsubsection{Control system}
+The control system is designed with a cascade structure consisting of three control loops, as shown in Fig.~\ref{fig:hardwareOverview}.
+\begin{figure}[!ht]
+\centering
+  \def\svgwidth{\columnwidth}
+\graphicspath{{graphics/}}
+\begin{footnotesize}
+\input{graphics/hardwareOverview.pdf_tex}
+\end{footnotesize}
+\caption{Association of control loops to physical hardware.}
+\label{fig:hardwareOverview}
+\end{figure}
+
+The main idea of using a cascade control structure is to obtain disturbance attenuation and elimination of nonlinear effects. The dynamics of the end-effector joints are affected by a considerable friction; hence, cascade control of these joints is imperative to obtain a good performance. To obtain a large bandwidth, we implement the controls in hardware. In particular, the current and speed controllers are implemented in the ESCON motor driver, running at sampling frequencies of 54~kHz and 5.4~kHz, and the position controller is implemented in the FPGA with a sampling frequency of 2~kHz.
+
+The current implementation of the control system allows a sampling frequency, which is comparable to the 1300~Hz of the da Vinci
+surgeon console \cite{faust2007robotics}. This opens the possibility to do research on a surgical robot with performance comparable to a state-of-the-art commercial robot.
+
+trajectory planning 100~Hz
+
+
+
+
+
+%\input{graphics/hardwareOverview.pdf_tex}
+%%\begin{figure}[t]
+%%    \centering
+%%       \includegraphics[scale=1]{graphics/hardwareOverview.pdf}
+%%    \caption{TBD. \label{fig:hardwareOverview}}
+%%\end{figure}
+%\begin{center}
+%\resizebox{\linewidth}{!}{\input{graphics/hardwareOverview.pdf_tex}}
+%\end{center}
 
 \subsection{Description of the ROS packages}
 
